@@ -1,6 +1,8 @@
 #![feature(duration_float)]
 
 use amethyst::{
+    LoggerConfig,
+    LogLevelFilter,
     prelude::*,
     renderer::{
         DisplayConfig,
@@ -9,6 +11,7 @@ use amethyst::{
         RenderBundle,
         Stage,
     },
+    StdoutLog,
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
 };
@@ -27,7 +30,12 @@ fn main() -> amethyst::Result<()> {
         input::InputBundle,
     };
 
-//    amethyst::start_logger(Default::default());
+    amethyst::start_logger(LoggerConfig {
+        stdout: StdoutLog::Colored,
+        level_filter: LogLevelFilter::Warn,
+        log_file: None,
+        allow_env_override: false,
+    });
 
     let display_config_path = format!("{}/resources/display_config.ron", application_root_dir());
     let display_config = DisplayConfig::load(&display_config_path);
