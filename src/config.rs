@@ -20,6 +20,7 @@ impl Default for ArenaConfig {
 pub struct BallConfig {
     pub velocity: Vector2<f32>,
     pub radius: f32,
+    pub score_timeout_sec: f32,
 }
 
 impl Default for BallConfig {
@@ -27,6 +28,7 @@ impl Default for BallConfig {
         BallConfig {
             velocity: Vector2::new(75., 50.),
             radius: 2.5,
+            score_timeout_sec: 1.,
         }
     }
 }

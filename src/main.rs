@@ -1,3 +1,5 @@
+#![feature(duration_float)]
+
 use amethyst::{
     prelude::*,
     renderer::{
@@ -53,7 +55,7 @@ fn main() -> amethyst::Result<()> {
         .with(systems::PaddleSystem, "paddle_system", &["input_system"])
         .with(systems::BallMotionSystem, "ball_motion_system", &[])
         .with(systems::BallCollisionSystem, "collision_system", &["paddle_system", "ball_motion_system"])
-        .with(systems::VictorySystem, "victory_system", &["paddle_system", "ball_motion_system"]);
+        .with(systems::ScoreSystem, "victory_system", &["paddle_system", "ball_motion_system"]);
 
     let mut game = Application::new("./", Pong, game_data)?;
     game.run();

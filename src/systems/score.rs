@@ -1,5 +1,8 @@
 use amethyst::{
-    core::transform::Transform,
+    core::{
+        timing::Time,
+        transform::Transform,
+    },
     ecs::prelude::*,
     ui::UiText,
 };
@@ -8,14 +11,15 @@ use crate::{
     config::ArenaConfig,
     pong::{
         Ball,
+        LastScoreTime,
         Scoreboard,
         ScoreText,
     },
 };
 
-pub struct VictorySystem;
+pub struct ScoreSystem;
 
-impl<'s> System<'s> for VictorySystem {
+impl<'s> System<'s> for ScoreSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,
         WriteStorage<'s, Transform>,
@@ -23,9 +27,20 @@ impl<'s> System<'s> for VictorySystem {
         Write<'s, Scoreboard>,
         ReadExpect<'s, ScoreText>,
         Read<'s, ArenaConfig>,
+        Read<'s, Time>,
+        Write<'s, LastScoreTime>,
     );
 
-    fn run(&mut self, (mut balls, mut locals, mut ui_text, mut scoreboard, text, arena_config): Self::SystemData) {
+    fn run(&mut self, (
+        mut balls,
+        mut locals,
+        mut ui_text,
+        mut scoreboard,
+        text,
+        arena_config,
+        time,
+        mut last_score,
+    ): Self::SystemData) {
         for (mut ball, transform) in (&mut balls, &mut locals).join() {
             let ball_x = transform.translation().x;
 
@@ -52,10 +67,10 @@ impl<'s> System<'s> for VictorySystem {
             }
 
             if scored {
+                last_score.0 = time.absolute_time();
+
                 ball.velocity[0] = -ball.velocity[0];
                 transform.set_x(arena_config.width / 2.0);
-
-                println!("Score: | {:^3} | {:^3} |", scoreboard.score_left, scoreboard.score_right);
             }
         }
     }

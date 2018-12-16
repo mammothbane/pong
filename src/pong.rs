@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::transform::Transform,
@@ -52,6 +54,16 @@ pub struct ScoreText {
     pub p2_score: Entity,
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct LastScoreTime(pub Duration);
+
+impl Default for LastScoreTime {
+    fn default() -> Self {
+        LastScoreTime(Duration::new(0, 0))
+    }
+}
+
+
 pub struct Pong;
 
 impl SimpleState for Pong {
@@ -61,6 +73,8 @@ impl SimpleState for Pong {
         let sprite_sheet = load_sprite_sheet(world);
 
         load_config(world);
+
+        world.add_resource(LastScoreTime::default());
 
         init_paddles(world, sprite_sheet.clone());
         init_ball(world, sprite_sheet);
@@ -75,8 +89,6 @@ fn load_config(world: &mut World) {
 
     let config_path = format!("{}/resources/config.ron", application_root_dir());
     let config = PongConfig::load_no_fallback(&config_path).unwrap();
-
-    println!("{:?}", config);
 
     world.add_resource(config.arena);
     world.add_resource(config.ball);
