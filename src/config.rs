@@ -1,7 +1,4 @@
-use amethyst::core::nalgebra::{
-    Vector2,
-    Vector4,
-};
+use amethyst::core::nalgebra::Vector2;
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
@@ -23,7 +20,6 @@ impl Default for ArenaConfig {
 pub struct BallConfig {
     pub velocity: Vector2<f32>,
     pub radius: f32,
-    pub color: Vector4<f32>,
 }
 
 impl Default for BallConfig {
@@ -31,7 +27,6 @@ impl Default for BallConfig {
         BallConfig {
             velocity: Vector2::new(75., 50.),
             radius: 2.5,
-            color: Vector4::new(1., 0., 0., 1.),
         }
     }
 }
@@ -40,8 +35,7 @@ impl Default for BallConfig {
 pub struct PaddleConfig {
     pub height: f32,
     pub width: f32,
-    pub velocity: f32,
-    pub color: Vector4<f32>,
+    pub speed: f32,
 }
 
 impl Default for PaddleConfig {
@@ -49,8 +43,7 @@ impl Default for PaddleConfig {
         PaddleConfig {
             height: 15.,
             width: 2.5,
-            velocity: 75.,
-            color: Vector4::new(0., 0., 1., 1.),
+            speed: 75.,
         }
     }
 }

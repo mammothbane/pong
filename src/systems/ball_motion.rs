@@ -16,11 +16,13 @@ impl<'s> System<'s> for BallMotionSystem {
     );
 
     fn run(&mut self, (balls, mut locals, time): Self::SystemData) {
+        let time_delta = time.delta_seconds();
+
         (&balls, &mut locals)
             .join()
             .for_each(|(ball, local)| {
-                local.translate_x(ball.velocity[0] * time.delta_seconds());
-                local.translate_y(ball.velocity[1] * time.delta_seconds());
+                local.translate_x(ball.velocity[0] * time_delta);
+                local.translate_y(ball.velocity[1] * time_delta);
             });
     }
 }

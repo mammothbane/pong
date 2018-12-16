@@ -1,5 +1,8 @@
 use amethyst::{
-    core::Transform,
+    core::{
+        timing::Time,
+        Transform,
+    },
     ecs::{
         Join,
         Read,
@@ -26,9 +29,10 @@ impl<'s> System<'s> for PaddleSystem {
         ReadStorage<'s, Paddle>,
         Read<'s, InputHandler<String, String>>,
         Read<'s, ArenaConfig>,
+        Read<'s, Time>,
     );
 
-    fn run(&mut self, (mut transforms, paddles, input, arena_config): Self::SystemData) {
+    fn run(&mut self, (mut transforms, paddles, input, arena_config, time): Self::SystemData) {
         (&paddles, &mut transforms)
             .join()
             .filter_map(|(paddle, transform)| {
@@ -42,7 +46,7 @@ impl<'s> System<'s> for PaddleSystem {
             .for_each(|(paddle, transform, amt)| {
                 let y = transform.translation().y;
 
-                transform.set_y(num::clamp(y + 1.2 * amt as f32,
+                transform.set_y(num::clamp(y + paddle.speed * time.delta_seconds() * amt as f32,
                                            paddle.height * 0.5,
                                            arena_config.height - paddle.height * 0.5,
                                            )

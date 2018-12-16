@@ -25,6 +25,7 @@ pub struct Paddle {
     pub side: Side,
     pub width: f32,
     pub height: f32,
+    pub speed: f32,
 }
 
 impl Component for Paddle {
@@ -109,15 +110,15 @@ fn init_camera(world: &mut World) {
 fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
     use crate::config::{ArenaConfig, PaddlesConfig};
 
-    let mut left_tsfm = Transform::default();
-    let mut right_tsfm = Transform::default();
+    let mut left_transform = Transform::default();
+    let mut right_transform = Transform::default();
 
     let arena_config = *world.read_resource::<ArenaConfig>();
     let paddle_config = *world.read_resource::<PaddlesConfig>();
 
     let y = arena_config.height / 2.0;
-    left_tsfm.set_xyz(paddle_config.left.width * 0.5, y, 0.0);
-    right_tsfm.set_xyz(arena_config.width - paddle_config.right.width * 0.5, y, 0.0);
+    left_transform.set_xyz(paddle_config.left.width * 0.5, y, 0.0);
+    right_transform.set_xyz(arena_config.width - paddle_config.right.width * 0.5, y, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet,
@@ -130,9 +131,10 @@ fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
             side: Side::Left,
             width: paddle_config.left.width,
             height: paddle_config.left.height,
+            speed: paddle_config.left.speed,
         })
         .with(sprite_render.clone())
-        .with(left_tsfm)
+        .with(left_transform)
         .build();
 
     world
@@ -141,9 +143,10 @@ fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
             side: Side::Right,
             width: paddle_config.right.width,
             height: paddle_config.right.height,
+            speed: paddle_config.right.speed,
         })
         .with(sprite_render.clone())
-        .with(right_tsfm)
+        .with(right_transform)
         .build();
 }
 
