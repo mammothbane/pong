@@ -3,20 +3,21 @@ use amethyst::{
     renderer::{
         DisplayConfig,
         DrawFlat2D,
-        Event,
         Pipeline,
         RenderBundle,
         Stage,
-        VirtualKeyCode,
     },
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
 };
 
-use self::pong::Pong;
+use self::{
+    pong::Pong,
+};
 
 mod pong;
 mod systems;
+mod config;
 
 fn main() -> amethyst::Result<()> {
     use amethyst::{
@@ -26,8 +27,8 @@ fn main() -> amethyst::Result<()> {
 
 //    amethyst::start_logger(Default::default());
 
-    let config_path = format!("{}/resources/display_config.ron", application_root_dir());
-    let config = DisplayConfig::load(&config_path);
+    let display_config_path = format!("{}/resources/display_config.ron", application_root_dir());
+    let display_config = DisplayConfig::load(&display_config_path);
 
     let binding_path = format!("{}/resources/binding_config.ron", application_root_dir());
     let input_bundle = InputBundle::<String, String>::new()
@@ -43,7 +44,7 @@ fn main() -> amethyst::Result<()> {
 
     let game_data = GameDataBuilder::default()
         .with_bundle(
-            RenderBundle::new(pipe, Some(config))
+            RenderBundle::new(pipe, Some(display_config))
                 .with_sprite_sheet_processor()
         )?
         .with_bundle(TransformBundle::new())?

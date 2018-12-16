@@ -3,11 +3,13 @@ use amethyst::{
     ecs::prelude::*,
 };
 
-use crate::pong::{
-    ARENA_HEIGHT,
-    Ball,
-    Paddle,
-    Side,
+use crate::{
+    config::ArenaConfig,
+    pong::{
+        Ball,
+        Paddle,
+        Side,
+    },
 };
 
 pub struct BallCollisionSystem;
@@ -17,13 +19,14 @@ impl <'s> System<'s> for BallCollisionSystem {
         WriteStorage<'s, Ball>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
+        Read<'s, ArenaConfig>,
     );
 
-    fn run(&mut self, (mut balls, paddles, transforms): Self::SystemData) {
+    fn run(&mut self, (mut balls, paddles, transforms, arena_config): Self::SystemData) {
         for (mut ball, transform) in (&mut balls, &transforms).join() {
             let pos = transform.translation();
 
-            let above_top = pos.y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0;
+            let above_top = pos.y >= arena_config.height - ball.radius && ball.velocity[1] > 0.0;
             let below_bottom = pos.y <= ball.radius && ball.velocity[1] < 0.0;
 
             if above_top || below_bottom {

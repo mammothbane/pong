@@ -15,9 +15,6 @@ use amethyst::{
     },
 };
 
-pub const ARENA_HEIGHT: f32 = 100.0;
-pub const ARENA_WIDTH: f32 = 100.0;
-
 #[derive(PartialEq, Eq)]
 pub enum Side {
     Left,
@@ -30,19 +27,6 @@ pub struct Paddle {
     pub height: f32,
 }
 
-impl Paddle {
-    pub const HEIGHT: f32 = 16.0;
-    pub const WIDTH: f32 = 4.0;
-
-    fn new(side: Side) -> Paddle {
-        Paddle {
-            side,
-            width: Paddle::WIDTH,
-            height: Paddle::HEIGHT,
-        }
-    }
-}
-
 impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
@@ -50,12 +34,6 @@ impl Component for Paddle {
 pub struct Ball {
     pub velocity: [f32; 2],
     pub radius: f32,
-}
-
-impl Ball {
-    pub const RADIUS: f32 = 2.0;
-    pub const VELOCITY_X: f32 = 75.0;
-    pub const VELOCITY_Y: f32 = 50.0;
 }
 
 impl Component for Ball {
@@ -81,6 +59,8 @@ impl SimpleState for Pong {
 
         let sprite_sheet = load_sprite_sheet(world);
 
+        load_config(world);
+
         init_paddles(world, sprite_sheet.clone());
         init_ball(world, sprite_sheet);
         init_scoreboard(world);
@@ -88,7 +68,28 @@ impl SimpleState for Pong {
     }
 }
 
+fn load_config(world: &mut World) {
+    use amethyst::utils::application_root_dir;
+    use crate::config::PongConfig;
+
+    let config_path = format!("{}/resources/config.ron", application_root_dir());
+    let config = PongConfig::load_no_fallback(&config_path).unwrap();
+
+    println!("{:?}", config);
+
+    world.add_resource(config.arena);
+    world.add_resource(config.ball);
+    world.add_resource(config.paddles);
+}
+
 fn init_camera(world: &mut World) {
+    use crate::config::ArenaConfig;
+
+    let (width, height) = {
+        let arena_config = world.read_resource::<ArenaConfig>();
+        (arena_config.width, arena_config.height)
+    };
+
     let mut transform = Transform::default();
     transform.set_z(1.0);
 
@@ -96,9 +97,9 @@ fn init_camera(world: &mut World) {
         .with(Camera::from(
             Projection::orthographic(
                 0.0,
-                ARENA_WIDTH,
+                width,
                 0.0,
-                ARENA_HEIGHT,
+                height,
             )
         ))
         .with(transform)
@@ -106,12 +107,17 @@ fn init_camera(world: &mut World) {
 }
 
 fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
+    use crate::config::{ArenaConfig, PaddlesConfig};
+
     let mut left_tsfm = Transform::default();
     let mut right_tsfm = Transform::default();
 
-    let y = ARENA_HEIGHT / 2.0;
-    left_tsfm.set_xyz(Paddle::WIDTH * 0.5, y, 0.0);
-    right_tsfm.set_xyz(ARENA_WIDTH - Paddle::WIDTH * 0.5, y, 0.0);
+    let arena_config = *world.read_resource::<ArenaConfig>();
+    let paddle_config = *world.read_resource::<PaddlesConfig>();
+
+    let y = arena_config.height / 2.0;
+    left_tsfm.set_xyz(paddle_config.left.width * 0.5, y, 0.0);
+    right_tsfm.set_xyz(arena_config.width - paddle_config.right.width * 0.5, y, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet,
@@ -120,14 +126,22 @@ fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
 
     world
         .create_entity()
-        .with(Paddle::new(Side::Left))
+        .with(Paddle {
+            side: Side::Left,
+            width: paddle_config.left.width,
+            height: paddle_config.left.height,
+        })
         .with(sprite_render.clone())
         .with(left_tsfm)
         .build();
 
     world
         .create_entity()
-        .with(Paddle::new(Side::Right))
+        .with(Paddle {
+            side: Side::Right,
+            width: paddle_config.right.width,
+            height: paddle_config.right.height,
+        })
         .with(sprite_render.clone())
         .with(right_tsfm)
         .build();
@@ -162,8 +176,13 @@ fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
 }
 
 fn init_ball(world: &mut World, sprite_sheet: SpriteSheetHandle) {
+    use crate::config::{ArenaConfig, BallConfig};
+
+    let arena_config = *world.read_resource::<ArenaConfig>();
+    let ball_config = *world.read_resource::<BallConfig>();
+
     let mut local = Transform::default();
-    local.set_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+    local.set_xyz(arena_config.width / 2.0, arena_config.height / 2.0, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet,
@@ -174,8 +193,8 @@ fn init_ball(world: &mut World, sprite_sheet: SpriteSheetHandle) {
         .create_entity()
         .with(sprite_render)
         .with(Ball {
-            radius: Ball::RADIUS,
-            velocity: [Ball::VELOCITY_X, Ball::VELOCITY_Y],
+            radius: ball_config.radius,
+            velocity: [ball_config.velocity.x, ball_config.velocity.y],
         })
         .with(local)
         .build();

@@ -10,10 +10,12 @@ use amethyst::{
     input::InputHandler,
 };
 
-use crate::pong::{
-    ARENA_HEIGHT,
-    Paddle,
-    Side,
+use crate::{
+    config::ArenaConfig,
+    pong::{
+        Paddle,
+        Side,
+    }
 };
 
 pub struct PaddleSystem;
@@ -23,9 +25,10 @@ impl<'s> System<'s> for PaddleSystem {
         WriteStorage<'s, Transform>,
         ReadStorage<'s, Paddle>,
         Read<'s, InputHandler<String, String>>,
+        Read<'s, ArenaConfig>,
     );
 
-    fn run(&mut self, (mut transforms, paddles, input): Self::SystemData) {
+    fn run(&mut self, (mut transforms, paddles, input, arena_config): Self::SystemData) {
         (&paddles, &mut transforms)
             .join()
             .filter_map(|(paddle, transform)| {
@@ -36,12 +39,12 @@ impl<'s> System<'s> for PaddleSystem {
 
                 amount.map(|amt| (paddle, transform, amt))
             })
-            .for_each(|(_paddle, transform, amt)| {
+            .for_each(|(paddle, transform, amt)| {
                 let y = transform.translation().y;
 
                 transform.set_y(num::clamp(y + 1.2 * amt as f32,
-                                           Paddle::HEIGHT * 0.5,
-                                           ARENA_HEIGHT - Paddle::HEIGHT * 0.5,
+                                           paddle.height * 0.5,
+                                           arena_config.height - paddle.height * 0.5,
                                            )
                 );
             });

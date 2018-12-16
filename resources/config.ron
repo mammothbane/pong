@@ -1,0 +1,25 @@
+(
+    arena: (
+        height: 100.0,
+        width: 100.0,
+    ),
+    ball: (
+        velocity: [75., 50.],
+        radius: 2.5,
+        color: [1.0, 0.647, 0.0, 1.0],
+    ),
+    paddles: (
+        left: (
+            height: 15.0,
+            width: 2.5,
+            velocity: 75.0,
+            color: [0.0, 0.0, 1.0, 1.0],
+        ),
+        right: (
+            height: 15.0,
+            width: 2.5,
+            velocity: 75.0,
+            color: [0.0, 1.0, 1.0, 1.0],
+        ),
+    ),
+)
