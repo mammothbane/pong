@@ -5,4 +5,5 @@ authors = ["Nathan Perry <avaglir@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-amethyst = "0.10.0"
+amethyst = { version = "0.10.0", features = ["nightly"] }
+num = "0.2.0"

@@ -9,32 +9,50 @@ use amethyst::{
         Stage,
         VirtualKeyCode,
     },
+    ui::{DrawUi, UiBundle},
     utils::application_root_dir,
 };
 
-pub struct Pong;
+use self::pong::Pong;
 
-impl SimpleState for Pong {
-}
+mod pong;
+mod systems;
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    use amethyst::{
+        core::transform::TransformBundle,
+        input::InputBundle,
+    };
+
+//    amethyst::start_logger(Default::default());
 
     let config_path = format!("{}/resources/display_config.ron", application_root_dir());
     let config = DisplayConfig::load(&config_path);
+
+    let binding_path = format!("{}/resources/binding_config.ron", application_root_dir());
+    let input_bundle = InputBundle::<String, String>::new()
+        .with_bindings_from_file(binding_path)?;
 
     let pipe = Pipeline::build()
         .with_stage(
             Stage::with_backbuffer()
                 .clear_target([0.0, 0.0, 0.0, 1.0], 1.0)
-                .with_pass(DrawFlat2D::new()),
+                .with_pass(DrawFlat2D::new())
+                .with_pass(DrawUi::new()),
         );
 
     let game_data = GameDataBuilder::default()
         .with_bundle(
             RenderBundle::new(pipe, Some(config))
                 .with_sprite_sheet_processor()
-        )?;
+        )?
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(input_bundle)?
+        .with_bundle(UiBundle::<String, String>::new())?
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
+        .with(systems::BallMotionSystem, "ball_motion_system", &[])
+        .with(systems::BallCollisionSystem, "collision_system", &["paddle_system", "ball_motion_system"])
+        .with(systems::VictorySystem, "victory_system", &["paddle_system", "ball_motion_system"]);
 
     let mut game = Application::new("./", Pong, game_data)?;
     game.run();
